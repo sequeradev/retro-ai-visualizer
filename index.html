@@ -3,13 +3,15 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Visualizer by Manolitro</title>
+  <title>Matrix Signal Visualizer</title>
   <link rel="stylesheet" href="/styles/retro.css" />
 </head>
 <body>
+  <div class="matrix-overlay" aria-hidden="true"></div>
   <!-- Cabecera -->
   <header>
-    <h1>Visualizer by Manolitro</h1>
+    <h1>Matrix Signal Visualizer</h1>
+    <p>Escucha los latidos de la Matrix y deja que la lluvia de código baile con tu audio.</p>
   </header>
 
   <!-- Contenido principal -->
@@ -17,39 +19,34 @@
     <!-- Cola de canciones (modal oculta) -->
     <div id="queueModal" class="queue-modal" hidden>
       <div class="queue-modal-content">
-        <h2>Cola de canciones</h2>
+        <h2>Cola de señales</h2>
         <ul id="queueList"></ul>
         <button id="closeQueueBtn">Cerrar</button>
       </div>
     </div>
     <!-- Controles -->
     <div id="controls" class="controls">
-      <button id="queueBtn" type="button" aria-label="Cola"><i data-feather="list"></i></button>
-      <button id="prevBtn"  type="button" aria-label="Anterior"><i data-feather="chevrons-left"></i></button>
-      <button id="playBtn"  type="button" aria-label="Play/Pausa"><i data-feather="play"></i></button>
-      <button id="nextBtn"  type="button" aria-label="Siguiente"><i data-feather="chevrons-right"></i></button>
-      <button id="loadBtn"  type="button">Load Files</button>
+      <button id="queueBtn" type="button" aria-label="Cola"><i data-lucide="list"></i></button>
+      <button id="prevBtn"  type="button" aria-label="Anterior"><i data-lucide="chevrons-left"></i></button>
+      <button id="playBtn"  type="button" aria-label="Play/Pausa"><i data-lucide="play"></i></button>
+      <button id="nextBtn"  type="button" aria-label="Siguiente"><i data-lucide="chevrons-right"></i></button>
+      <button id="loadBtn"  type="button">Cargar señales</button>
       <input  id="fileInput" type="file" accept="audio/*" hidden multiple />
-      <button id="micBtn"   type="button" aria-label="Capturar audio"><i data-feather="mic"></i></button>
+      <button id="micBtn"   type="button" aria-label="Capturar audio"><i data-lucide="mic"></i></button>
     </div>
 
     <!-- Visualizador -->
     <div class="visual-container">
-      <!-- PONEMOS TAMAÑO EXPLÍCITO AL CANVAS -->
-      <canvas id="visualizer" width="960" height="540"></canvas>
+      <canvas id="visualizer" width="960" height="540" aria-label="Visualizador de audio estilo Matrix"></canvas>
     </div>
   </main>
 
   <!-- Botón pantalla completa página -->
   <button id="pageFSBtn" type="button" aria-label="Pantalla completa de la web">
-    <i data-feather="maximize"></i>
+    <i data-lucide="maximize"></i>
   </button>
 
   <!-- Scripts -->
-  <script src="https://unpkg.com/feather-icons"></script>
-  <script>
-    feather.replace();
-  </script>
   <script type="module" src="/src/main.ts"></script>
 </body>
 </html>

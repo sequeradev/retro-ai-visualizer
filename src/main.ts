@@ -3,8 +3,10 @@ import { createVisualizer } from './visualizer';
 import { getSystemAudioStream } from './captureAudio';
 import './styles/retro.css';
 
-// Inicializar iconos Lucide
-createIcons({ icons });
+// Inicializar iconos Lucide con una clase consistente para estilado
+const lucideAttrs = { class: 'lucide-icon' } as const;
+const refreshIcons = () => createIcons({ icons, attrs: lucideAttrs });
+refreshIcons();
 
 // DOM
 const loadBtn     = document.getElementById('loadBtn')      as HTMLButtonElement;
@@ -38,7 +40,7 @@ let currentTrackIdx = 0;
 function setPlayPauseIcon(isPlaying: boolean) {
   // Lucide icon names: "play", "pause"
   playBtn.innerHTML = `<i data-lucide="${isPlaying ? "pause" : "play"}"></i>`;
-  createIcons({ icons, attrs: { class: "lucide" } }); // re-render icon
+  refreshIcons(); // re-render icon
 }
 
 // Inicializa el pipeline de audio y visual solo UNA VEZ
@@ -99,7 +101,7 @@ micBtn.addEventListener('click', async () => {
     currentTrackIdx = 0;
     updateQueueModal();
   } catch {
-    alert('No se pudo acceder al audio del sistema.');
+    alert('No se pudo acceder al audio del sistema. Verifica los permisos de la Matrix.');
   }
 });
 
@@ -123,7 +125,7 @@ playBtn.addEventListener('click', () => audioEl.paused ? audioEl.play() : audioE
 prevBtn.addEventListener('click', async () => {
   if (audioQueue.length > 0) {
     if (currentTrackIdx > 0) currentTrackIdx--;
-    else currentTrackIdx = 0;
+    else currentTrackIdx = audioQueue.length - 1;
     await playCurrentTrack(true); // Nuevo preset
   }
 });
@@ -148,7 +150,7 @@ audioEl.addEventListener('ended', async () => {
 // --- Modal Cola ---
 queueBtn.addEventListener('click', () => {
   if (audioQueue.length === 0) {
-    alert('No hay canciones en la cola.');
+    alert('La cola de señales está vacía en este momento.');
     return;
   }
   updateQueueModal();
@@ -164,7 +166,10 @@ function updateQueueModal() {
   queueList.innerHTML = '';
   audioQueue.forEach((file, idx) => {
     const li = document.createElement('li');
-    li.textContent = file.name;
+    const indexSpan = document.createElement('span');
+    indexSpan.className = 'queue-index';
+    indexSpan.textContent = String(idx + 1).padStart(2, '0');
+    li.append(indexSpan, document.createTextNode(` ${file.name}`));
     if (idx === currentTrackIdx) li.className = 'current';
     queueList.appendChild(li);
   });
