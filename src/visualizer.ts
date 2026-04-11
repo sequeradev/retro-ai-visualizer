@@ -4,9 +4,14 @@ import ButterchurnPresets from 'butterchurn-presets';
 const PRESETS = ButterchurnPresets.getPresets();
 const PRESET_NAMES = Object.keys(PRESETS);
 
+export interface VisualizerOptions {
+  onPresetChange?: (name: string) => void;
+}
+
 export function createVisualizer(
   canvas: HTMLCanvasElement,
-  analyser: AnalyserNode
+  analyser: AnalyserNode,
+  options?: VisualizerOptions
 ) {
   // Ajustar tamaño del canvas explícitamente
   canvas.width = canvas.clientWidth || 800;
@@ -34,30 +39,40 @@ export function createVisualizer(
     raf = requestAnimationFrame(loop);
   }
 
-  // --- NUEVO: Método para cargar preset aleatorio sin destruir visualizador ---
-  function loadRandomPreset() {
+  let currentPresetName = '';
+  let autoRotateTimer: ReturnType<typeof setTimeout> | null = null;
+  const AUTO_ROTATE_MS = 45_000;
+
+  function loadRandomPreset(blendTime = 2.5) {
     const name = PRESET_NAMES[Math.floor(Math.random() * PRESET_NAMES.length)];
-    viz.loadPreset(PRESETS[name], 0.0);
-    console.log('🎛️ Nuevo preset cargado:', name);
+    viz.loadPreset(PRESETS[name], blendTime);
+    currentPresetName = name;
+    options?.onPresetChange?.(name);
+    console.log('🎛️ Preset cargado:', name);
+
+    // Reiniciar temporizador de auto-rotación
+    if (autoRotateTimer) clearTimeout(autoRotateTimer);
+    autoRotateTimer = setTimeout(() => loadRandomPreset(), AUTO_ROTATE_MS);
+  }
+
+  function loadRandomPresetInstant() {
+    loadRandomPreset(0.5);
   }
 
   return {
     start() {
       if (raf) cancelAnimationFrame(raf);
-      loadRandomPreset();
+      loadRandomPreset(0); // Sin blend en la carga inicial — visual instantáneo
       loop();
     },
     loadRandomPreset,
+    loadRandomPresetInstant,
+    getCurrentPresetName() { return currentPresetName; },
     destroy() {
       if (raf) cancelAnimationFrame(raf);
+      if (autoRotateTimer) clearTimeout(autoRotateTimer);
       viz.disconnectAudio();
       window.removeEventListener('resize', resize);
-      const ctx2 = canvas.getContext('2d');
-      if (ctx2) {
-        ctx2.clearRect(0, 0, canvas.width, canvas.height);
-        ctx2.fillStyle = "#000";
-        ctx2.fillRect(0, 0, canvas.width, canvas.height);
-      }
     }
   };
 }

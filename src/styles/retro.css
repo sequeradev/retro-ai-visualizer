@@ -115,6 +115,14 @@ button#micBtn.active i {
   flex: 1; width: 100%;
   display: flex; justify-content: center;
 }
+
+.canvas-wrapper {
+  position: relative;
+  display: inline-block;
+  border-radius: 18px;
+  overflow: hidden;
+}
+
 #visualizer {
   width: 90vw; height: 60vh;
   max-width: 960px; max-height: 540px;
@@ -123,9 +131,94 @@ button#micBtn.active i {
   cursor: pointer;
   transition: box-shadow 0.2s;
   background: #000 !important;
+  display: block;
 }
 #visualizer:active {
   box-shadow: 0 0 16px #00ff99, 0 0 2px #0ff;
+}
+
+/* Overlay canvas — encima de Butterchurn, sin interacción */
+#overlay {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+  border-radius: 18px;
+}
+
+/* Track name */
+.track-name {
+  color: #00ff99;
+  font-size: 9px;
+  font-family: 'Press Start 2P', monospace;
+  max-width: 90vw;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  margin: 4px 0 10px 0;
+  text-align: center;
+  min-height: 14px;
+  letter-spacing: 1px;
+}
+.track-name.scrolling {
+  animation: marquee 9s linear infinite;
+  text-overflow: clip;
+}
+@keyframes marquee {
+  0%   { transform: translateX(50%); }
+  100% { transform: translateX(-100%); }
+}
+
+/* Preset toast */
+.preset-toast {
+  position: fixed;
+  top: 68px; left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.78);
+  color: #00ff99;
+  font-size: 7px;
+  font-family: 'Press Start 2P', monospace;
+  padding: 5px 12px;
+  border: 1px solid #0f0;
+  border-radius: 6px;
+  pointer-events: none;
+  z-index: 10000;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+  max-width: 80vw;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.preset-toast.visible { opacity: 1; }
+
+/* Volume slider */
+.volume-slider {
+  -webkit-appearance: none;
+  width: 90px; height: 5px;
+  background: #0f0;
+  border-radius: 3px;
+  outline: none;
+  cursor: pointer;
+  align-self: center;
+  border: none;
+}
+.volume-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  background: #00ff99;
+  border: 2px solid #000;
+  cursor: pointer;
+  box-shadow: 0 0 6px #00ff99;
+}
+.volume-slider::-moz-range-thumb {
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  background: #00ff99;
+  border: 2px solid #000;
+  cursor: pointer;
 }
 
 /* 7. Fullscreen button (pantalla completa web) */

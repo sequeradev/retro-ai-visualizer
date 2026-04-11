@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Visualizer by Manolitro</title>
-  <link rel="stylesheet" href="/styles/retro.css" />
+  <link rel="stylesheet" href="/src/styles/retro.css" />
 </head>
 <body>
   <!-- Cabecera -->
@@ -24,32 +24,38 @@
     </div>
     <!-- Controles -->
     <div id="controls" class="controls">
-      <button id="queueBtn" type="button" aria-label="Cola"><i data-feather="list"></i></button>
-      <button id="prevBtn"  type="button" aria-label="Anterior"><i data-feather="chevrons-left"></i></button>
-      <button id="playBtn"  type="button" aria-label="Play/Pausa"><i data-feather="play"></i></button>
-      <button id="nextBtn"  type="button" aria-label="Siguiente"><i data-feather="chevrons-right"></i></button>
+      <button id="queueBtn" type="button" aria-label="Cola"><i data-lucide="list"></i></button>
+      <button id="prevBtn"  type="button" aria-label="Anterior"><i data-lucide="chevrons-left"></i></button>
+      <button id="playBtn"  type="button" aria-label="Play/Pausa"><i data-lucide="play"></i></button>
+      <button id="nextBtn"  type="button" aria-label="Siguiente"><i data-lucide="chevrons-right"></i></button>
       <button id="loadBtn"  type="button">Load Files</button>
       <input  id="fileInput" type="file" accept="audio/*" hidden multiple />
-      <button id="micBtn"   type="button" aria-label="Capturar audio"><i data-feather="mic"></i></button>
+      <button id="micBtn"   type="button" aria-label="Capturar audio"><i data-lucide="mic"></i></button>
+      <input  id="volumeSlider" type="range" min="0" max="1" step="0.01" value="1"
+              aria-label="Volumen" class="volume-slider" />
     </div>
+
+    <!-- Track name display -->
+    <div id="trackName" class="track-name" aria-live="polite"></div>
 
     <!-- Visualizador -->
     <div class="visual-container">
-      <!-- PONEMOS TAMAÑO EXPLÍCITO AL CANVAS -->
-      <canvas id="visualizer" width="960" height="540"></canvas>
+      <div class="canvas-wrapper">
+        <canvas id="visualizer" width="960" height="540"></canvas>
+        <canvas id="overlay"    width="960" height="540"></canvas>
+      </div>
     </div>
+
+    <!-- Preset toast -->
+    <div id="presetToast" class="preset-toast" aria-live="polite"></div>
   </main>
 
   <!-- Botón pantalla completa página -->
   <button id="pageFSBtn" type="button" aria-label="Pantalla completa de la web">
-    <i data-feather="maximize"></i>
+    <i data-lucide="maximize"></i>
   </button>
 
   <!-- Scripts -->
-  <script src="https://unpkg.com/feather-icons"></script>
-  <script>
-    feather.replace();
-  </script>
   <script type="module" src="/src/main.ts"></script>
 </body>
 </html>
