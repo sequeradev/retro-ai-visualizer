@@ -3,6 +3,7 @@ import { createVisualizer } from './visualizer';
 import { getSystemAudioStream } from './captureAudio';
 import { createBeatDetector, type BeatCallbacks } from './beatDetector';
 import { createOverlay } from './overlay';
+import { createWaveformBar } from './waveformBar';
 import './styles/retro.css';
 
 // Inicializar iconos Lucide
@@ -17,8 +18,9 @@ const playBtn       = document.getElementById('playBtn')       as HTMLButtonElem
 const nextBtn       = document.getElementById('nextBtn')       as HTMLButtonElement;
 const micBtn        = document.getElementById('micBtn')        as HTMLButtonElement;
 const pageFSBtn     = document.getElementById('pageFSBtn')     as HTMLButtonElement;
-const canvas        = document.getElementById('visualizer')    as HTMLCanvasElement;
-const overlayCanvas = document.getElementById('overlay')       as HTMLCanvasElement;
+const canvas         = document.getElementById('visualizer')    as HTMLCanvasElement;
+const overlayCanvas  = document.getElementById('overlay')       as HTMLCanvasElement;
+const waveformCanvas = document.getElementById('waveformBar')   as HTMLCanvasElement;
 const volumeSlider  = document.getElementById('volumeSlider')  as HTMLInputElement;
 const trackNameEl   = document.getElementById('trackName')     as HTMLDivElement;
 const presetToastEl = document.getElementById('presetToast')   as HTMLDivElement;
@@ -34,9 +36,10 @@ audioEl.crossOrigin = 'anonymous';
 const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
 let srcNode:  MediaElementAudioSourceNode | null = null;
 let analyser: AnalyserNode | null = null;
-let viz:  ReturnType<typeof createVisualizer>  | null = null;
-let beat: ReturnType<typeof createBeatDetector> | null = null;
-let overlay: ReturnType<typeof createOverlay>   | null = null;
+let viz:      ReturnType<typeof createVisualizer>   | null = null;
+let beat:     ReturnType<typeof createBeatDetector> | null = null;
+let overlay:  ReturnType<typeof createOverlay>      | null = null;
+let waveform: ReturnType<typeof createWaveformBar>  | null = null;
 let mainRaf = 0;
 
 // ── Cola de archivos ──────────────────────────────────────────────────────────
@@ -98,6 +101,7 @@ function startMainLoop() {
   function loop() {
     beat?.tick();
     overlay?.render();
+    waveform?.render();
     mainRaf = requestAnimationFrame(loop);
   }
   mainRaf = requestAnimationFrame(loop);
@@ -117,8 +121,9 @@ function initAudioAndVisualizer() {
     overlay.syncSize(canvas);
 
     beat = createBeatDetector(analyser, makeBeatCallbacks());
+    waveform = createWaveformBar(waveformCanvas, analyser);
 
-    viz = createVisualizer(canvas, analyser, { onPresetChange: showPresetToast });
+    viz = createVisualizer(canvas, analyser, {});
     viz.start();
 
     startMainLoop();
@@ -158,9 +163,10 @@ micBtn.addEventListener('click', async () => {
   try {
     // Limpiar pipeline anterior
     if (mainRaf) { cancelAnimationFrame(mainRaf); mainRaf = 0; }
-    if (viz)     { viz.destroy(); viz = null; }
-    if (srcNode) { try { srcNode.disconnect(); } catch {} srcNode = null; }
-    if (analyser){ try { analyser.disconnect(); } catch {} analyser = null; }
+    if (viz)      { viz.destroy(); viz = null; }
+    if (waveform) { waveform.destroy(); waveform = null; }
+    if (srcNode)  { try { srcNode.disconnect(); } catch {} srcNode = null; }
+    if (analyser) { try { analyser.disconnect(); } catch {} analyser = null; }
 
     const stream = await getSystemAudioStream();
     analyser = audioCtx.createAnalyser();
@@ -173,8 +179,9 @@ micBtn.addEventListener('click', async () => {
     overlay.syncSize(canvas);
 
     beat = createBeatDetector(analyser, makeBeatCallbacks());
+    waveform = createWaveformBar(waveformCanvas, analyser);
 
-    viz = createVisualizer(canvas, analyser, { onPresetChange: showPresetToast });
+    viz = createVisualizer(canvas, analyser, {});
     viz.start();
 
     startMainLoop();
@@ -266,10 +273,14 @@ function updateQueueModal() {
 }
 
 // ── Pantalla completa CANVAS ──────────────────────────────────────────────────
+let canvasTriggeredFullscreen = false;
+
 canvas.addEventListener('click', () => {
   if (!document.fullscreenElement) {
-    canvas.requestFullscreen();
-  } else if (document.fullscreenElement === canvas) {
+    canvasTriggeredFullscreen = true;
+    document.documentElement.requestFullscreen();
+  } else if (canvasTriggeredFullscreen) {
+    canvasTriggeredFullscreen = false;
     document.exitFullscreen();
   }
 });
@@ -277,6 +288,7 @@ canvas.addEventListener('click', () => {
 // ── Pantalla completa PÁGINA WEB ──────────────────────────────────────────────
 pageFSBtn.addEventListener('click', () => {
   if (!document.fullscreenElement) {
+    canvasTriggeredFullscreen = false;
     document.documentElement.requestFullscreen();
   } else {
     document.exitFullscreen();
@@ -322,9 +334,10 @@ function restoreCanvasSize() {
 }
 
 document.addEventListener('fullscreenchange', () => {
-  if (document.fullscreenElement === canvas) {
+  if (document.fullscreenElement && canvasTriggeredFullscreen) {
     resizeCanvasToFullscreen();
-  } else {
+  } else if (!document.fullscreenElement) {
+    if (canvasTriggeredFullscreen) canvasTriggeredFullscreen = false;
     restoreCanvasSize();
   }
 });

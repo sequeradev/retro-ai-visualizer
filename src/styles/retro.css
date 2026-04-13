@@ -146,6 +146,35 @@ button#micBtn.active i {
   border-radius: 18px;
 }
 
+/* Fullscreen: canvas cubre toda la pantalla */
+:fullscreen #visualizer,
+:-webkit-full-screen #visualizer {
+  position: fixed !important;
+  top: 0 !important; left: 0 !important;
+  width: 100vw !important; height: 100vh !important;
+  max-width: none !important; max-height: none !important;
+  border: none !important;
+  border-radius: 0 !important;
+  z-index: 9999 !important;
+}
+:fullscreen #overlay,
+:-webkit-full-screen #overlay {
+  border-radius: 0 !important;
+}
+
+/* Waveform bar */
+#waveformBar {
+  width: 90vw;
+  max-width: 960px;
+  height: 80px;
+  display: block;
+  margin: 8px auto 0;
+  border: 2px solid #0f0;
+  border-radius: 10px;
+  background: #0a0a0a;
+  box-shadow: 0 0 12px #00ff9944, inset 0 0 20px #000;
+}
+
 /* Track name */
 .track-name {
   color: #00ff99;
