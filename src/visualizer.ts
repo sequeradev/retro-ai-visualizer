@@ -34,8 +34,9 @@ export function createVisualizer(
   window.addEventListener('resize', resize);
 
   let raf = 0;
+  let paused = false;
   function loop() {
-    viz.render();
+    if (!paused) viz.render();
     raf = requestAnimationFrame(loop);
   }
 
@@ -65,6 +66,7 @@ export function createVisualizer(
       loadRandomPreset(0); // Sin blend en la carga inicial — visual instantáneo
       loop();
     },
+    setActive(active: boolean) { paused = !active; },
     loadRandomPreset,
     loadRandomPresetInstant,
     getCurrentPresetName() { return currentPresetName; },

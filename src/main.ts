@@ -95,12 +95,36 @@ function makeBeatCallbacks(): BeatCallbacks {
   };
 }
 
+// ── Detección de silencio ─────────────────────────────────────────────────────
+const _silenceBuffer = new Uint8Array(1024);
+let _silentFrames = 0;
+const SILENCE_THRESHOLD = 4;   // valor mínimo de bin para considerar que hay audio
+const SILENCE_FRAMES    = 30;  // frames consecutivos silenciosos para pausar viz
+
+function hasAudio(): boolean {
+  if (!analyser) return false;
+  analyser.getByteFrequencyData(_silenceBuffer);
+  for (let i = 0; i < Math.min(analyser.frequencyBinCount, _silenceBuffer.length); i++) {
+    if (_silenceBuffer[i] > SILENCE_THRESHOLD) return true;
+  }
+  return false;
+}
+
 // ── Bucle principal de overlay + beat detector ────────────────────────────────
 function startMainLoop() {
   if (mainRaf) cancelAnimationFrame(mainRaf);
   function loop() {
+    const audioPresent = hasAudio();
+    if (audioPresent) {
+      _silentFrames = 0;
+    } else {
+      _silentFrames++;
+    }
+
+    const vizActive = audioPresent || _silentFrames < SILENCE_FRAMES;
+    viz?.setActive(vizActive);
     beat?.tick();
-    overlay?.render();
+    if (vizActive) overlay?.render();
     waveform?.render();
     mainRaf = requestAnimationFrame(loop);
   }
@@ -168,8 +192,10 @@ micBtn.addEventListener('click', async () => {
     if (srcNode)  { try { srcNode.disconnect(); } catch {} srcNode = null; }
     if (analyser) { try { analyser.disconnect(); } catch {} analyser = null; }
 
+    await audioCtx.resume();
     const stream = await getSystemAudioStream();
     analyser = audioCtx.createAnalyser();
+    analyser.fftSize = 2048;
     analyser.smoothingTimeConstant = 0.75;
 
     const src = audioCtx.createMediaStreamSource(stream);

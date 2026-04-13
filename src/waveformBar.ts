@@ -8,8 +8,8 @@ export function createWaveformBar(
   const ctx = canvas.getContext('2d')!;
   const barCount = 64;
 
-  // Buffer para datos de frecuencia
-  const freqData = new Uint8Array(analyser.frequencyBinCount);
+  // Buffer dinámico — se recrea si el fftSize cambia
+  let freqData = new Uint8Array(analyser.frequencyBinCount);
 
   // Valores suavizados para cada barra
   const smoothed = new Float32Array(barCount);
@@ -26,6 +26,10 @@ export function createWaveformBar(
   window.addEventListener('resize', resize);
 
   function render() {
+    // Actualizar buffer si el fftSize cambió
+    if (freqData.length !== analyser.frequencyBinCount) {
+      freqData = new Uint8Array(analyser.frequencyBinCount);
+    }
     analyser.getByteFrequencyData(freqData);
 
     const w = canvas.getBoundingClientRect().width;
