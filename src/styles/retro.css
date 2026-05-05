@@ -146,9 +146,9 @@ button#micBtn.active i {
   border-radius: 18px;
 }
 
-/* Fullscreen: canvas cubre toda la pantalla */
-:fullscreen #visualizer,
-:-webkit-full-screen #visualizer {
+/* Fullscreen: canvas cubre toda la pantalla (modo normal, NO móvil) */
+:fullscreen body:not(.mobile-fs-active) #visualizer,
+:-webkit-full-screen body:not(.mobile-fs-active) #visualizer {
   position: fixed !important;
   top: 0 !important; left: 0 !important;
   width: 100vw !important; height: 100vh !important;
@@ -157,9 +157,40 @@ button#micBtn.active i {
   border-radius: 0 !important;
   z-index: 9999 !important;
 }
-:fullscreen #overlay,
-:-webkit-full-screen #overlay {
+:fullscreen body:not(.mobile-fs-active) #overlay,
+:-webkit-full-screen body:not(.mobile-fs-active) #overlay {
   border-radius: 0 !important;
+}
+
+/* Fullscreen modo móvil 9:16: canvas vertical centrado con bandas negras a los lados */
+body.mobile-fs-active #mobileFSBackdrop {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  background: #000;
+  z-index: 9990;
+}
+body.mobile-fs-active #visualizer {
+  position: fixed !important;
+  top: 0 !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  height: 100vh !important;
+  width: calc(100vh * 9 / 16) !important;
+  max-width: none !important; max-height: none !important;
+  border: none !important;
+  border-radius: 0 !important;
+  z-index: 9999 !important;
+}
+body.mobile-fs-active #overlay {
+  position: fixed !important;
+  top: 0 !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  height: 100vh !important;
+  width: calc(100vh * 9 / 16) !important;
+  border-radius: 0 !important;
+  z-index: 10000 !important;
 }
 
 /* Waveform bar */
@@ -271,6 +302,37 @@ button#micBtn.active i {
 #pageFSBtn:hover, .fullscreen-btn:hover {
   background: #e0ffe0;
   box-shadow: 0 4px 32px #00ff99aa;
+}
+
+/* Botón pantalla completa formato móvil 9:16 */
+#mobileFSBtn {
+  position: fixed !important;
+  right: 88px; bottom: 24px;
+  z-index: 999;
+  background: #fff;
+  border: 2.5px solid #0f0;
+  border-radius: 50%;
+  width: 54px; height: 54px;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 2px 16px #0008;
+  transition: background 0.2s, box-shadow 0.2s;
+  cursor: pointer;
+  padding: 0;
+}
+#mobileFSBtn i {
+  width: 30px; height: 30px;
+  stroke: #111 !important;
+  stroke-width: 2.5px;
+  fill: none;
+}
+#mobileFSBtn:hover {
+  background: #e0ffe0;
+  box-shadow: 0 4px 32px #00ff99aa;
+}
+/* Mientras estamos en modo móvil, el botón móvil queda por encima del backdrop */
+body.mobile-fs-active #mobileFSBtn,
+body.mobile-fs-active #pageFSBtn {
+  z-index: 10001;
 }
 
 /* Modal para la cola de canciones */

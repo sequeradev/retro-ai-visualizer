@@ -18,6 +18,8 @@ const playBtn       = document.getElementById('playBtn')       as HTMLButtonElem
 const nextBtn       = document.getElementById('nextBtn')       as HTMLButtonElement;
 const micBtn        = document.getElementById('micBtn')        as HTMLButtonElement;
 const pageFSBtn     = document.getElementById('pageFSBtn')     as HTMLButtonElement;
+const mobileFSBtn   = document.getElementById('mobileFSBtn')   as HTMLButtonElement;
+const mobileFSBackdrop = document.getElementById('mobileFSBackdrop') as HTMLDivElement;
 const canvas         = document.getElementById('visualizer')    as HTMLCanvasElement;
 const overlayCanvas  = document.getElementById('overlay')       as HTMLCanvasElement;
 const waveformCanvas = document.getElementById('waveformBar')   as HTMLCanvasElement;
@@ -300,6 +302,7 @@ function updateQueueModal() {
 
 // ── Pantalla completa CANVAS ──────────────────────────────────────────────────
 let canvasTriggeredFullscreen = false;
+let mobileFullscreen = false;
 
 canvas.addEventListener('click', () => {
   if (!document.fullscreenElement) {
@@ -315,6 +318,18 @@ canvas.addEventListener('click', () => {
 pageFSBtn.addEventListener('click', () => {
   if (!document.fullscreenElement) {
     canvasTriggeredFullscreen = false;
+    mobileFullscreen = false;
+    document.documentElement.requestFullscreen();
+  } else {
+    document.exitFullscreen();
+  }
+});
+
+// ── Pantalla completa formato MÓVIL 9:16 ─────────────────────────────────────
+mobileFSBtn.addEventListener('click', () => {
+  if (!document.fullscreenElement) {
+    canvasTriggeredFullscreen = false;
+    mobileFullscreen = true;
     document.documentElement.requestFullscreen();
   } else {
     document.exitFullscreen();
@@ -346,6 +361,38 @@ function resizeCanvasToFullscreen() {
   overlay?.syncSize(canvas);
 }
 
+function resizeCanvasToMobileFullscreen() {
+  // Calcular dimensiones 9:16 verticales centradas
+  const h = window.innerHeight;
+  const w = Math.round(h * 9 / 16);
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width  = Math.round(w * dpr);
+  canvas.height = Math.round(h * dpr);
+  overlay?.syncSize(canvas);
+}
+
+function enterMobileFullscreen() {
+  document.body.classList.add('mobile-fs-active');
+  mobileFSBackdrop.hidden = false;
+  resizeCanvasToMobileFullscreen();
+  // Forzar al visualizador a recalcular su renderer con el nuevo tamaño 9:16
+  window.dispatchEvent(new Event('resize'));
+}
+
+function exitMobileFullscreen() {
+  document.body.classList.remove('mobile-fs-active');
+  mobileFSBackdrop.hidden = true;
+  // Limpiar estilos inline aplicados al canvas
+  canvas.style.position = '';
+  canvas.style.top      = '';
+  canvas.style.left     = '';
+  canvas.style.transform = '';
+  canvas.style.width    = '';
+  canvas.style.height   = '';
+  canvas.style.border   = '';
+  canvas.style.zIndex   = '';
+}
+
 function restoreCanvasSize() {
   canvas.style.width    = origCanvasStyle.width;
   canvas.style.height   = origCanvasStyle.height;
@@ -360,15 +407,29 @@ function restoreCanvasSize() {
 }
 
 document.addEventListener('fullscreenchange', () => {
-  if (document.fullscreenElement && canvasTriggeredFullscreen) {
-    resizeCanvasToFullscreen();
-  } else if (!document.fullscreenElement) {
-    if (canvasTriggeredFullscreen) canvasTriggeredFullscreen = false;
-    restoreCanvasSize();
+  if (document.fullscreenElement) {
+    if (mobileFullscreen) {
+      enterMobileFullscreen();
+    } else if (canvasTriggeredFullscreen) {
+      resizeCanvasToFullscreen();
+    }
+  } else {
+    if (mobileFullscreen) {
+      exitMobileFullscreen();
+      mobileFullscreen = false;
+    }
+    if (canvasTriggeredFullscreen) {
+      canvasTriggeredFullscreen = false;
+      restoreCanvasSize();
+    }
   }
 });
 
 window.addEventListener('resize', () => {
+  if (document.fullscreenElement && mobileFullscreen) {
+    resizeCanvasToMobileFullscreen();
+    return;
+  }
   if (document.fullscreenElement === canvas) {
     const dpr = window.devicePixelRatio || 1;
     canvas.width  = Math.round(window.innerWidth  * dpr);
